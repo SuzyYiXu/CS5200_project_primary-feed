@@ -90,7 +90,7 @@ CREATE TABLE IF NOT EXISTS volunteers (
   volunteer_id     INT          NOT NULL AUTO_INCREMENT,
   user_id          INT          NOT NULL UNIQUE,
   availability     VARCHAR(255) NULL,
-  background_check TINYINT      NULL COMMENT '0=Not cleared,1=Cleared',
+  background_check TINYINT      NOT NULL DEFAULT 0 COMMENT '0=Not cleared,1=Cleared',
   PRIMARY KEY (volunteer_id),
   CONSTRAINT fk_volunteers_user
     FOREIGN KEY (user_id)
@@ -104,7 +104,7 @@ CREATE TABLE IF NOT EXISTS staff (
   staff_id  INT         NOT NULL AUTO_INCREMENT,
   user_id   INT         NOT NULL UNIQUE,
   job_title VARCHAR(45) NULL,
-  hire_date DATETIME    NULL,
+  hire_date DATETIME    NOT NULL,
   PRIMARY KEY (staff_id),
   CONSTRAINT fk_staff_user
     FOREIGN KEY (user_id)
@@ -117,7 +117,7 @@ CREATE TABLE IF NOT EXISTS staff (
 CREATE TABLE IF NOT EXISTS admin_permissions (
   permission_id          INT          NOT NULL AUTO_INCREMENT,
   permission_type        TINYINT      NOT NULL COMMENT 'Enum value for permission type',
-  permission_description VARCHAR(255) NULL,
+  permission_description VARCHAR(255) NOT NULL,
   PRIMARY KEY (permission_id)
 );
 
@@ -264,15 +264,17 @@ CREATE TABLE IF NOT EXISTS donation_items (
   donation_item_id INT NOT NULL AUTO_INCREMENT,
   donation_id      INT NOT NULL,
   quantity         INT NOT NULL,
-  inventory_id     INT NULL,
+  food_sku         VARCHAR(45) NOT NULL,
+  unit             VARCHAR(45) NOT NULL,
+  expiry_date      DATETIME NOT NULL,
   PRIMARY KEY (donation_item_id),
-  UNIQUE KEY uq_donation_inventory (donation_id, inventory_id),
+  UNIQUE KEY uq_donation_food_item (donation_id, food_sku, expiry_date),
   CONSTRAINT fk_donation_items_donation
     FOREIGN KEY (donation_id)
     REFERENCES donations (donation_id),
-  CONSTRAINT fk_donation_items_inventory
-    FOREIGN KEY (inventory_id)
-    REFERENCES inventories (inventory_id)
+  CONSTRAINT fk_donation_items_food_item
+    FOREIGN KEY (food_sku)
+    REFERENCES food_items (sku)
 );
 
 -- ─────────────────────────────────────────
@@ -296,9 +298,9 @@ CREATE TABLE IF NOT EXISTS distributions (
     REFERENCES staff (staff_id)
 );
 
--- ──────────
+-- ────────────────────────
 -- DISTRIBUTION_ITEMS
--- ────────────────────
+-- ────────────────────────
 CREATE TABLE IF NOT EXISTS distribution_items (
   distribution_item_id INT NOT NULL AUTO_INCREMENT,
   distribution_id      INT NOT NULL,
@@ -312,6 +314,17 @@ CREATE TABLE IF NOT EXISTS distribution_items (
   CONSTRAINT fk_distribution_items_inventory
     FOREIGN KEY (inventory_id)
     REFERENCES inventories (inventory_id)
+);
+
+-- ────────────────────────
+-- LOGS FOR TRIGGERS
+-- ────────────────────────
+CREATE TABLE IF NOT EXISTS trigger_logs (
+  log_id       INT          NOT NULL AUTO_INCREMENT,
+  trigger_name VARCHAR(100) NOT NULL,
+  message      VARCHAR(255) NOT NULL,
+  created_at   DATETIME     NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (log_id)
 );
 
 -- ──────────────────────────
