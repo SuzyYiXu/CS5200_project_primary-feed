@@ -329,7 +329,7 @@ FROM INFORMATION_SCHEMA.TRIGGERS
 WHERE TRIGGER_SCHEMA = 'primaryfeed';
 
 SELECT 'Create procedures...' as message;
-source dbPROC.sql;
+source dbPROCS.sql;
 
 SELECT
   ROUTINE_NAME        AS procedure_name,
