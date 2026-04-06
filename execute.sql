@@ -36,6 +36,16 @@ SELECT 'distributions' AS table_name; SELECT * FROM distributions;
 SELECT 'distribution_items' AS table_name; SELECT * FROM distribution_items;
 SELECT 'trigger_logs' AS table_name; SELECT * FROM trigger_logs;
 
+-- ─────────────────────────────────────────
+-- TEST OUT VIEWS
+-- ─────────────────────────────────────────
+SELECT 'Testing out views...' as message;
+
+SELECT 'Inventory items expiring within next 6 months' as description;
+SELECT * from vw_expiring_inventory;
+SELECT 'Hours worked by volunteers' as description;
+SELECT * from vw_volunteer_hours_log;
+
 -- ───────────────────────────────────────
 -- Sample SQL queries
 -- ───────────────────

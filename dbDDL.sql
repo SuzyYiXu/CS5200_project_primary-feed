@@ -354,3 +354,48 @@ SELECT
 FROM INFORMATION_SCHEMA.ROUTINES
 WHERE ROUTINE_SCHEMA = 'primaryfeed'
   AND ROUTINE_TYPE   = 'PROCEDURE';
+
+-- ──────────────────────────
+-- Create views
+-- ──────────────────────────
+SELECT 'Create a sample view...' as message;
+
+DROP VIEW IF EXISTS vw_volunteer_hours_log;
+
+CREATE VIEW vw_volunteer_hours_log as
+SELECT
+    vs.shift_id,
+    vs.volunteer_id,
+    u.first_name,
+    u.last_name,
+    vs.branch_id,
+    vs.shift_date,
+    vs.shift_time_start,
+    vs.shift_time_end,
+    CONCAT(FLOOR(TIMESTAMPDIFF(MINUTE, vs.shift_time_start, vs.shift_time_end) / 60), 'h ', MOD(TIMESTAMPDIFF(MINUTE, vs.shift_time_start, vs.shift_time_end), 60), 'm') as total_hours
+FROM volunteer_shifts vs
+JOIN users u ON vs.volunteer_id = u.user_id;
+
+SELECT 'Created vw_volunteer_hours_log...' as message;
+
+DROP VIEW IF EXISTS vw_expiring_inventory;
+
+CREATE VIEW vw_expiring_inventory AS
+SELECT
+    i.inventory_id,
+    fbb.branch_name,
+    i.food_sku,
+    f.food_name,
+    i.quantity,
+    i.unit,
+    i.expiry_date,
+    DATEDIFF(i.expiry_date, CURDATE()) AS days_until_expiry
+FROM inventories i
+JOIN food_items f ON i.food_sku = f.sku
+JOIN food_bank_branches fbb ON i.branch_id = fbb.branch_id
+JOIN food_banks fb ON fbb.food_bank_id = fb.food_bank_id
+WHERE i.quantity > 0
+  AND i.expiry_date <= DATE_ADD(CURDATE(), INTERVAL 3 MONTH)
+  AND i.expiry_date >= CURDATE();
+
+SELECT 'Created vw_expiring_inventory...' as message;
