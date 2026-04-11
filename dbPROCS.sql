@@ -29,7 +29,7 @@ DROP PROCEDURE IF EXISTS record_donation$$
 CREATE PROCEDURE record_donation(
   IN p_branch_id   INT,
   IN p_donor_id    INT,
-  IN p_staff_id    INT,
+  IN p_user_id    INT,
   IN p_food_sku    VARCHAR(45),
   IN p_quantity    INT,
   IN p_unit        VARCHAR(45),
@@ -48,8 +48,8 @@ BEGIN
   START TRANSACTION;
 
     -- Step 1: Create the donation header
-    INSERT INTO donations (branch_id, donor_id, staff_id, donation_date)
-    VALUES (p_branch_id, p_donor_id, p_staff_id, NOW());
+    INSERT INTO donations (branch_id, donor_id, user_id, donation_date)
+    VALUES (p_branch_id, p_donor_id, p_user_id, NOW());
 
     SET v_donation_id = LAST_INSERT_ID();
 
@@ -82,7 +82,7 @@ DROP PROCEDURE IF EXISTS record_distribution$$
 CREATE PROCEDURE record_distribution(
   IN p_branch_id      INT,
   IN p_beneficiary_id INT,
-  IN p_staff_id       INT,
+  IN p_user_id       INT,
   IN p_food_sku       VARCHAR(45),
   IN p_quantity       INT
 )
@@ -122,8 +122,8 @@ BEGIN
     END IF;
 
     -- Step 3: Create the distribution header
-    INSERT INTO distributions (branch_id, beneficiary_id, staff_id, distribution_date)
-    VALUES (p_branch_id, p_beneficiary_id, p_staff_id, NOW());
+    INSERT INTO distributions (branch_id, beneficiary_id, user_id, distribution_date)
+    VALUES (p_branch_id, p_beneficiary_id, p_user_id, NOW());
 
     SET v_distribution_id = LAST_INSERT_ID();
 

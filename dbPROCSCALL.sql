@@ -8,7 +8,7 @@ USE primaryfeed;
 
 SELECT 'Calling record_donation: 30 cans of SKU-001 donated to Downtown Boston by donor 1...' AS message;
 
-CALL record_donation(1, 1, 1, 'SKU-001', 30, 'cans', '2027-12-31 00:00:00');
+CALL record_donation(1, 1, 3, 'SKU-001', 30, 'cans', '2027-12-31 00:00:00');
 
 SELECT 'record_donation call completed.' AS message;
 
@@ -78,7 +78,7 @@ WHERE di.donation_id = (SELECT MAX(donation_id) FROM donations);
 
 SELECT 'Calling record_distribution: distributing 5 cans of SKU-001 at Downtown Boston to beneficiary 1 (FIFO)...' AS message;
 
-CALL record_distribution(1, 1, 1, 'SKU-001', 5);
+CALL record_distribution(1, 1, 5, 'SKU-001', 5);
 
 SELECT 'record_distribution call completed.' AS message;
 
@@ -149,7 +149,7 @@ ORDER BY i.expiry_date ASC;
 -- ─────────────────────────────────────────
 SELECT '[ Verification 5 ] Testing below-zero guard — expecting an error...' AS message;
 
-CALL record_distribution(1, 1, 1, 'SKU-001', 99999);
+CALL record_distribution(1, 1, 3, 'SKU-001', 99999);
 
 /*
   Expected output:

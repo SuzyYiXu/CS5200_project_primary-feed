@@ -122,18 +122,18 @@ CREATE TABLE IF NOT EXISTS admin_permissions (
 );
 
 -- ─────────────────────────────────────────
--- STAFF_ADMIN_PERMISSIONS
+-- USER_ADMIN_PERMISSIONS
 -- ─────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS staff_admin_permissions (
-  staff_permission_id INT NOT NULL AUTO_INCREMENT,
-  staff_id            INT NOT NULL,
+CREATE TABLE IF NOT EXISTS user_admin_permissions (
+  user_permission_id INT NOT NULL AUTO_INCREMENT,
+  user_id            INT NOT NULL,
   permission_id       INT NOT NULL,
-  PRIMARY KEY (staff_permission_id),
-  UNIQUE KEY uq_staff_permission (staff_id, permission_id),
-  CONSTRAINT fk_staff_permissions_staff
-    FOREIGN KEY (staff_id)
-    REFERENCES staff (staff_id),
-  CONSTRAINT fk_staff_permissions_permission
+  PRIMARY KEY (user_permission_id),
+  UNIQUE KEY uq_user_permission (user_id, permission_id),
+  CONSTRAINT fk_user_permissions_user
+    FOREIGN KEY (user_id)
+    REFERENCES users (user_id),
+  CONSTRAINT fk_user_permissions_permission
     FOREIGN KEY (permission_id)
     REFERENCES admin_permissions (permission_id)
 );
@@ -243,7 +243,7 @@ CREATE TABLE IF NOT EXISTS donations (
   donation_id   INT      NOT NULL AUTO_INCREMENT,
   branch_id     INT      NOT NULL,
   donor_id      INT      NOT NULL,
-  staff_id      INT      NOT NULL,
+  user_id      INT      NOT NULL,
   donation_date DATETIME NOT NULL,
   PRIMARY KEY (donation_id),
   CONSTRAINT fk_donations_branch
@@ -252,9 +252,9 @@ CREATE TABLE IF NOT EXISTS donations (
   CONSTRAINT fk_donations_donor
     FOREIGN KEY (donor_id)
     REFERENCES donors (donor_id),
-  CONSTRAINT fk_donations_staff
-    FOREIGN KEY (staff_id)
-    REFERENCES staff (staff_id)
+  CONSTRAINT fk_donations_user
+    FOREIGN KEY (user_id)
+    REFERENCES users (user_id)
 );
 
 -- ─────────────────────────────────────────
@@ -284,7 +284,7 @@ CREATE TABLE IF NOT EXISTS distributions (
   distribution_id   INT      NOT NULL AUTO_INCREMENT,
   branch_id         INT      NOT NULL,
   beneficiary_id    INT      NOT NULL,
-  staff_id          INT      NOT NULL,
+  user_id          INT      NOT NULL,
   distribution_date DATETIME NOT NULL,
   PRIMARY KEY (distribution_id),
   CONSTRAINT fk_distributions_branch
@@ -293,9 +293,9 @@ CREATE TABLE IF NOT EXISTS distributions (
   CONSTRAINT fk_distributions_beneficiary
     FOREIGN KEY (beneficiary_id)
     REFERENCES beneficiaries (beneficiary_id),
-  CONSTRAINT fk_distributions_staff
-    FOREIGN KEY (staff_id)
-    REFERENCES staff (staff_id)
+  CONSTRAINT fk_distributions_user
+    FOREIGN KEY (user_id)
+    REFERENCES users (user_id)
 );
 
 -- ────────────────────────
@@ -374,7 +374,8 @@ SELECT
     vs.shift_time_end,
     CONCAT(FLOOR(TIMESTAMPDIFF(MINUTE, vs.shift_time_start, vs.shift_time_end) / 60), 'h ', MOD(TIMESTAMPDIFF(MINUTE, vs.shift_time_start, vs.shift_time_end), 60), 'm') as total_hours
 FROM volunteer_shifts vs
-JOIN users u ON vs.volunteer_id = u.user_id;
+JOIN volunteers v ON vs.volunteer_id = v.volunteer_id
+JOIN users u ON v.user_id = u.user_id;
 
 SELECT 'Created vw_volunteer_hours_log...' as message;
 

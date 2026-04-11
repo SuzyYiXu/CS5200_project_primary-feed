@@ -61,11 +61,12 @@ ORDER BY i.expiry_date ASC;
 
 /*
   Expected output (assuming today is 2026-04-01, SKU-001 old batch expires 2026-04-03):
-  +-----------------+---------+------------------+----------+------+---------------------+
-  | branch_name     | sku     | food_name        | quantity | unit | expiry_date         |
-  |-----------------|---------|------------------|----------|------|---------------------|
-  | Downtown Boston | SKU-001 | Canned Chickpeas | 29       | cans | 2026-04-03 00:00:00 |
-  +-----------------+---------+------------------+----------+------+---------------------+
+  +-----------------+---------+------------------+----------+--------+---------------------+
+  | branch_name     | sku     | food_name        | quantity | unit   | expiry_date         |
+  |-----------------|---------|------------------|----------|--------|---------------------|
+  | Downtown Boston | SKU-001 | Canned Chickpeas | 29       | cans   | 2026-04-03 00:00:00 |
+  | Downtown Boston | SKU-002 | Whole Milk (1L)  | 25       | liters | 2026-04-10 00:00:00 |
+  +-----------------+---------+------------------+----------+--------+---------------------+
 */
 
 
@@ -201,7 +202,7 @@ ORDER BY surplus DESC;
 -- Subquery using WITH (CTE) clause
 -- ═══════════════════════════════════════════════════════════════════
 
-SELECT 'Find the branch that distributed the highest total quantity of food in the last month. Show the branch name, food bank name, and total quantity distributed. Use a CTE to first compute totals per branch, then select the one with the maximum total.' as 'Query #6';
+SELECT 'Find the branch that distributed the highest total quantity of food in the last 1 month. Show the branch name, food bank name, and total quantity distributed. Use a CTE to first compute totals per branch, then select the one with the maximum total.' as 'Query #6';
 
 WITH branch_totals AS (
   SELECT
@@ -229,7 +230,7 @@ WHERE bt.total_distributed = (
   +-----------------+-----------------------+-------------------+
   | branch_name     | food_bank_name        | total_distributed |
   |-----------------|-----------------------|-------------------|
-  | Downtown Boston | Boston Area Food Bank |                19 |
+  | Downtown Boston | Boston Area Food Bank |                 9 |
   +-----------------+-----------------------+-------------------+
 */
 
