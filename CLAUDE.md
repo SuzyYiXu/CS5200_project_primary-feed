@@ -42,7 +42,7 @@ There are exactly two user roles. Role is stored as a `TINYINT` on the `users` t
 | `staff` | `0` | `staff` table | Full CRUD + reports page |
 | `volunteer` | `1` | `volunteers` table | CRUD only; no reports access (403) |
 
-> **Design note:** Phase 1 originally specified three roles (Admin, Volunteer, Staff). For MVP simplicity, Admin has been merged into `staff`. The `admin_permissions` and `staff_admin_permissions` tables exist and link to `staff.staff_id` to support fine-grained permission grants, but no UI is built for them in the MVP.
+> **Design note:** Phase 1 originally specified three roles (Admin, Volunteer, Staff). For MVP simplicity, Admin has been merged into `staff`. The `admin_permissions` and `user_admin_permissions` tables exist and grant fine-grained permissions to any user via `user_id`, but no UI is built for them in the MVP.
 
 Beneficiaries and donors do not have system accounts and cannot log in. Their records are managed by staff on their behalf. This is a deliberate MVP simplification — beneficiaries and donors are expected to interact with the food bank in person or by phone.
 
@@ -71,7 +71,7 @@ The DDL is in `dbDDL.sql`. It sources two additional files at the end:
 | `staff` | Subtype of `users`. Extra fields: `job_title`, `hire_date`. FK to `users.user_id` (unique). |
 | `volunteers` | Subtype of `users`. Extra fields: `availability`, `background_check`. FK to `users.user_id` (unique). |
 | `admin_permissions` | Catalog of permission types available to staff. Schema-only in MVP. |
-| `staff_admin_permissions` | Junction table granting permissions to staff members. FK to `staff.staff_id`. Schema-only in MVP. |
+| `user_admin_permissions` | Junction table granting permissions to any user (staff or volunteer) via `user_id` FK to `users.user_id`. Schema-only in MVP. |
 | `food_categories` | Categories for food items. |
 | `food_items` | Food catalog. Primary key is `sku VARCHAR(45)` — not an integer. `storage_condition` records required handling (e.g. "refrigerated") as a manual guide for staff — no automated inspection tracking in the MVP. |
 
@@ -83,9 +83,9 @@ The DDL is in `dbDDL.sql`. It sources two additional files at the end:
 | `volunteer_shifts` | Shift scheduling. Unique on `(volunteer_id, branch_id, shift_date, shift_time_start)`. FK to `volunteers.volunteer_id`. Overlap across different branches is prevented by triggers (see Triggers section). |
 | `donors` | Individuals or organizations. `donor_type TINYINT` (`0=Individual, 1=Organization`). No login access. |
 | `beneficiaries` | Recipients. `eligibility_status TINYINT` (`0=Ineligible, 1=Eligible`). No login access. |
-| `donations` | Header record. FKs to `food_bank_branches`, `donors`, and `staff`. |
+| `donations` | Header record. FKs to `food_bank_branches`, `donors`, and `users`. |
 | `donation_items` | Line items per donation. Includes `unit` and `expiry_date`. Unique on `(donation_id, food_sku, expiry_date)` — same SKU may appear twice with different expiry dates. |
-| `distributions` | Header record. FKs to `food_bank_branches`, `beneficiaries`, and `staff`. |
+| `distributions` | Header record. FKs to `food_bank_branches`, `beneficiaries`, and `users`. |
 | `distribution_items` | Line items per distribution. References `inventory_id` directly (not `food_sku`). Unique on `(distribution_id, inventory_id)`. |
 
 **System**
@@ -99,7 +99,7 @@ The DDL is in `dbDDL.sql`. It sources two additional files at the end:
 | View | Purpose |
 |---|---|
 | `vw_expiring_inventory` | Items with `quantity > 0` expiring within 3 months from today, with `days_until_expiry`. Use this for the inventory expiry UI. |
-| `vw_volunteer_hours_log` | Volunteer shifts joined with `users` for names, with `total_hours` formatted as `Xh Ym`. |
+| `vw_volunteer_hours_log_last_30_days` | Shift records from the last 30 days. Joins `volunteer_shifts` → `volunteers` → `users` for names, with `total_hours` formatted as `Xh Ym`. Use this for Query 7. |
 
 ### Triggers
 
@@ -114,8 +114,9 @@ Prevent a volunteer from being booked into overlapping shifts across any branch 
 - `users.role` determines the application role — always read this when issuing the JWT
 - `distribution_items` links to `inventories.inventory_id`, not to `food_sku` directly
 - `donation_items` unique key includes `expiry_date` — the same SKU can appear twice in one donation with different expiry dates
-- `donations` and `distributions` both require a `staff_id` FK — a staff member must be associated with every transaction
-- All food intake and distribution actions must be performed by a registered staff member — no anonymous transactions
+- `donations` and `distributions` both require a `user_id` FK referencing `users.user_id` — either a staff member or volunteer must be associated with every transaction
+- `user_admin_permissions` references `users.user_id` directly — permissions can be granted to any user regardless of role
+- All food intake and distribution actions must be performed by a registered user (staff or volunteer) — no anonymous transactions
 
 ---
 
@@ -128,7 +129,7 @@ Prevent a volunteer from being booked into overlapping shifts across any branch 
 5. Volunteers may not have overlapping shifts across any branch. Enforced at the DB level via `BEFORE INSERT` and `BEFORE UPDATE` triggers in `dbTRIGGERS.sql`.
 6. Every distribution must reference a valid inventory record, branch, and beneficiary.
 7. Foreign key constraints are enforced throughout.
-8. All food intake and distribution actions require a registered staff member.
+8. All food intake and distribution actions must be performed by a registered user (staff or volunteer). The `user_id` FK on `donations` and `distributions` references `users.user_id` directly, allowing either role to record transactions.
 9. Historical records are retained for auditing and reporting.
 
 ---
@@ -157,7 +158,7 @@ REST over HTTPS. JWT passed in the `Authorization: Bearer <token>` header.
 | Route | Page | Access |
 |---|---|---|
 | `/login` | Login | Public |
-| `/dashboard` | Dashboard — metric cards | All |
+| `/dashboard` | Dashboard — metric cards | Staff only |
 | `/inventory` | Inventory view with expiry flags | All |
 | `/donations` | Log and view donations | All |
 | `/distributions` | Log and view distributions | All |
@@ -175,7 +176,7 @@ All 17 queries from the original project specification. Do not rewrite them unle
 4. Food items grouped by category
 5. Branch that distributed the most food last month (uses CTE)
 6. All volunteers assigned to a specific branch
-7. Volunteer hours per volunteer in the last 30 days — use `vw_volunteer_hours_log`
+7. Volunteer hours per volunteer in the last 30 days — use `vw_volunteer_hours_log_last_30_days`
 8. Volunteers at a specific branch during a given time window on a given date
 9. Distribution history for a specific beneficiary
 10. Number of beneficiaries served per branch this week
@@ -207,9 +208,8 @@ All 17 queries from the original project specification. Do not rewrite them unle
 Do not implement the following unless explicitly asked:
 
 - User self-registration or password reset flows
-- Permission management UI (`admin_permissions` / `staff_admin_permissions` are schema-only)
+- Permission management UI (`admin_permissions` / `user_admin_permissions` are schema-only)
 - Beneficiary or donor login
 - Food inspection status or physical storage location tracking
 - Pagination beyond a reasonable row cap
 - File uploads, email notifications
-- GCP Compute Engine setup (handled separately from application development)

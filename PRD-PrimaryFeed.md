@@ -36,7 +36,7 @@ Food insecurity affects millions of people worldwide. A reliable Food Bank Manag
 
 | User type | Access | Description |
 |---|---|---|
-| Staff | System login | Manages branches, inventory, donations, distributions, volunteers, and reports. Every food intake and distribution transaction must be associated with a registered staff member. |
+| Staff | System login | Manages branches, inventory, donations, distributions, volunteers, and reports. Every food intake and distribution transaction must be associated with a registered user (staff or volunteer). |
 | Volunteer | System login | Views schedules and assigned branch. Records food intake and distribution under staff supervision. |
 | Beneficiary | No system login | Receives food assistance. Records managed by staff on their behalf. Beneficiaries are encouraged to visit a branch in person or call to allow staff to verify their identity. |
 | Donor | No system login | Individuals or organizations donating food. Donor records managed by staff. Donors interact with the food bank in person or by phone. |
@@ -50,7 +50,7 @@ Food insecurity affects millions of people worldwide. A reliable Food Bank Manag
 | `staff` | `0` | `staff` table | Full CRUD + reports page |
 | `volunteer` | `1` | `volunteers` table | CRUD only; no reports access (403) |
 
-> **Note:** Phase 1 originally specified three roles (Admin, Volunteer, Staff). For MVP simplicity, Admin has been merged into the `staff` role. The `admin_permissions` and `staff_admin_permissions` tables exist in the schema to grant fine-grained permissions to staff members but are not surfaced in the MVP UI.
+> **Note:** Phase 1 originally specified three roles (Admin, Volunteer, Staff). For MVP simplicity, Admin has been merged into the `staff` role. The `admin_permissions` and `user_admin_permissions` tables exist in the schema to grant fine-grained permissions to users but are not surfaced in the MVP UI.
 
 Both roles authenticate via the same login screen. Role is read from `users.role`, encoded in the issued JWT, and enforced at the API layer.
 
@@ -86,12 +86,11 @@ As a staff member, I want to query the system for a summary of branch performanc
 
 ### Out of scope (post-MVP)
 - User self-registration or password reset
-- Fine-grained permission management UI (`admin_permissions` / `staff_admin_permissions` are schema-only in the MVP)
+- Fine-grained permission management UI (`admin_permissions` / `user_admin_permissions` are schema-only in the MVP)
 - Beneficiary and donor system login
 - Food inspection status and physical storage location tracking (MVP records `storage_condition` on food items as a manual guide only)
 - Pagination beyond a reasonable row limit
 - File uploads, email notifications
-- GCP deployment (local deployment for MVP; GCP migration if time permits)
 
 ---
 
@@ -100,7 +99,7 @@ As a staff member, I want to query the system for a summary of branch performanc
 | Page | Accessible by | Purpose |
 |---|---|---|
 | Login | All | Credential entry, JWT issue |
-| Dashboard | All | Key metric cards at a glance |
+| Dashboard | Staff only | Key metric cards at a glance |
 | CRUD views | All | Tables, forms, and modals for daily operations |
 | Reports | Staff only | Pre-built insight query results |
 
@@ -124,7 +123,7 @@ As a staff member, I want to query the system for a summary of branch performanc
 
 | Group | Tables |
 |---|---|
-| Core entities | `addresses`, `food_banks`, `food_bank_branches`, `users`, `staff`, `volunteers`, `admin_permissions`, `staff_admin_permissions`, `food_categories`, `food_items` |
+| Core entities | `addresses`, `food_banks`, `food_bank_branches`, `users`, `staff`, `volunteers`, `admin_permissions`, `user_admin_permissions`, `food_categories`, `food_items` |
 | Operational events | `inventories`, `volunteer_shifts`, `donors`, `beneficiaries`, `donations`, `donation_items`, `distributions`, `distribution_items` |
 | System | `trigger_logs` |
 
@@ -133,7 +132,7 @@ As a staff member, I want to query the system for a summary of branch performanc
 | View | Purpose |
 |---|---|
 | `vw_expiring_inventory` | Items with `quantity > 0` expiring within 3 months from today, with `days_until_expiry` computed |
-| `vw_volunteer_hours_log` | Shift records joined with user names, with `total_hours` formatted as `Xh Ym` |
+| `vw_volunteer_hours_log_last_30_days` | Shift records from the last 30 days, joined through `volunteers` to `users` for names, with `total_hours` formatted as `Xh Ym` |
 
 ---
 
@@ -147,7 +146,7 @@ All 17 queries from the original project specification are supported:
 4. Food items grouped by category
 5. Branch that distributed the most food last month
 6. All volunteers assigned to a specific branch
-7. Volunteer hours worked per volunteer in the last 30 days (via `vw_volunteer_hours_log`)
+7. Volunteer hours worked per volunteer in the last 30 days (via `vw_volunteer_hours_log_last_30_days`)
 8. Volunteers working at a specific branch during a given time window on a given date
 9. Distribution history for a specific beneficiary
 10. Number of beneficiaries served per branch this week
@@ -170,5 +169,5 @@ All 17 queries from the original project specification are supported:
 5. Volunteers may be assigned to multiple branches over time but may not have overlapping shifts. Overlap is enforced at the DB level via `BEFORE INSERT` and `BEFORE UPDATE` triggers on `volunteer_shifts`.
 6. Every distribution transaction must reference a valid inventory record, branch, and beneficiary.
 7. Foreign key constraints are enforced throughout to ensure referential integrity.
-8. All food intake and distribution actions must be performed by a registered staff member (`staff_id` FK on `donations` and `distributions`).
+8. All food intake and distribution actions must be performed by a registered user (staff or volunteer). The `user_id` FK on `donations` and `distributions` references `users.user_id` directly, allowing either role to record transactions.
 9. Historical records are retained for auditing and reporting purposes.
