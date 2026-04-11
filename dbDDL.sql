@@ -360,9 +360,9 @@ WHERE ROUTINE_SCHEMA = 'primaryfeed'
 -- ──────────────────────────
 SELECT 'Create a sample view...' as message;
 
-DROP VIEW IF EXISTS vw_volunteer_hours_log;
+DROP VIEW IF EXISTS vw_volunteer_hours_log_last_30_days;
 
-CREATE VIEW vw_volunteer_hours_log as
+CREATE VIEW vw_volunteer_hours_log_last_30_days as
 SELECT
     vs.shift_id,
     vs.volunteer_id,
@@ -375,9 +375,10 @@ SELECT
     CONCAT(FLOOR(TIMESTAMPDIFF(MINUTE, vs.shift_time_start, vs.shift_time_end) / 60), 'h ', MOD(TIMESTAMPDIFF(MINUTE, vs.shift_time_start, vs.shift_time_end), 60), 'm') as total_hours
 FROM volunteer_shifts vs
 JOIN volunteers v ON vs.volunteer_id = v.volunteer_id
-JOIN users u ON v.user_id = u.user_id;
+JOIN users u ON v.user_id = u.user_id
+WHERE vs.shift_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY);
 
-SELECT 'Created vw_volunteer_hours_log...' as message;
+SELECT 'Created vw_volunteer_hours_log_last_30_days...' as message;
 
 DROP VIEW IF EXISTS vw_expiring_inventory;
 

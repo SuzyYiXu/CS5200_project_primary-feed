@@ -81,7 +81,7 @@ SELECT * from vw_expiring_inventory;
 */
 
 SELECT 'Hours worked by volunteers' as description;
-SELECT * from vw_volunteer_hours_log;
+SELECT * from vw_volunteer_hours_log_last_30_days;
 /*
   Expected output:
   +----------+--------------+------------+-----------+-----------+------------+------------------+----------------+-------------+
