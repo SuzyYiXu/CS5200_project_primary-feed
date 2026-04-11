@@ -66,7 +66,7 @@ SELECT 'trigger_logs' AS table_name; SELECT * FROM trigger_logs;
 -- ─────────────────────────────────────────
 SELECT 'Testing out views...' as message;
 
-SELECT 'Inventory items expiring within next 6 months' as description;
+SELECT 'Inventory items expiring within next 3 months' as description;
 SELECT * from vw_expiring_inventory;
 /*
   Expected output:
