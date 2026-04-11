@@ -118,6 +118,7 @@ END$$
 -- ─────────────────────────────────────────
 -- TRIGGER 5: trg_after_distribution_items_insert
 -- Decrements inventory batch quantity when a distribution item is inserted.
+-- ─────────────────────────────────────────
 DROP TRIGGER IF EXISTS trg_after_distribution_items_insert$$
 
 CREATE TRIGGER trg_after_distribution_items_insert
@@ -139,6 +140,57 @@ BEGIN
   INSERT INTO trigger_logs (trigger_name, message)
   VALUES ('trg_after_distribution_items_insert',
     CONCAT('Decremented inventory_id: ', NEW.inventory_id, ' by ', NEW.quantity));
+END$$
+
+-- ─────────────────────────────────────────
+-- TRIGGER 6: trg_volunteer_shift_no_overlap_insert
+-- Prevent volunteer double-booking on insert
+-- ─────────────────────────────────────────
+DROP TRIGGER IF EXISTS trg_volunteer_shift_no_overlap_insert$$
+
+CREATE TRIGGER trg_volunteer_shift_no_overlap_insert
+BEFORE INSERT ON volunteer_shifts
+FOR EACH ROW
+BEGIN
+  DECLARE overlap_count INT;
+
+  SELECT COUNT(*) INTO overlap_count
+  FROM volunteer_shifts
+  WHERE volunteer_id      = NEW.volunteer_id
+    AND shift_date        = NEW.shift_date
+    AND shift_time_start  < NEW.shift_time_end
+    AND shift_time_end    > NEW.shift_time_start;
+
+  IF overlap_count > 0 THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Volunteer already has an overlapping shift on this date.';
+  END IF;
+END$$
+
+-- ────────────────────
+-- TRIGGER 7: trg_volunteer_shift_no_overlap_update
+-- Prevent volunteer double-booking on update
+-- ─────────────────────────────────────────
+DROP TRIGGER IF EXISTS trg_volunteer_shift_no_overlap_update$$
+
+CREATE TRIGGER trg_volunteer_shift_no_overlap_update
+BEFORE UPDATE ON volunteer_shifts
+FOR EACH ROW
+BEGIN
+  DECLARE overlap_count INT;
+
+  SELECT COUNT(*) INTO overlap_count
+  FROM volunteer_shifts
+  WHERE volunteer_id      = NEW.volunteer_id
+    AND shift_date        = NEW.shift_date
+    AND shift_time_start  < NEW.shift_time_end
+    AND shift_time_end    > NEW.shift_time_start
+    AND shift_id         != NEW.shift_id;  -- exclude the row being updated
+
+  IF overlap_count > 0 THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Volunteer already has an overlapping shift on this date.';
+  END IF;
 END$$
 
 DELIMITER ;
