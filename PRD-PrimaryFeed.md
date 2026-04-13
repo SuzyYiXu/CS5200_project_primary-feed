@@ -91,6 +91,7 @@ As a staff member, I want to query the system for a summary of branch performanc
 - Food inspection status and physical storage location tracking (MVP records `storage_condition` on food items as a manual guide only)
 - Pagination beyond a reasonable row limit
 - File uploads, email notifications
+- Adding, editing, or deleting food categories via the UI — `food_categories` is a controlled reference table. The tiered expiry logic in `vw_expiring_inventory` depends on exact category name matches; free editing of category names would silently break expiry alerts. Category management is a post-MVP privileged operation.
 
 ---
 
@@ -131,7 +132,7 @@ As a staff member, I want to query the system for a summary of branch performanc
 
 | View | Purpose |
 |---|---|
-| `vw_expiring_inventory` | Items with `quantity > 0` expiring within 3 months from today, with `days_until_expiry` computed |
+| `vw_expiring_inventory` | Items with `quantity > 0` within their expiry threshold, with `days_until_expiry`, `expiry_threshold_days`, and `perishability_tier` computed. Perishables (Produce, Dairy, Meat, Seafood, Bakery) use a 7-day alert window; all other categories use a 90-day window. |
 | `vw_volunteer_hours_log_last_30_days` | Shift records from the last 30 days, joined through `volunteers` to `users` for names, with `total_hours` formatted as `Xh Ym` |
 
 ---

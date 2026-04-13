@@ -98,7 +98,7 @@ The DDL is in `dbDDL.sql`. It sources two additional files at the end:
 
 | View | Purpose |
 |---|---|
-| `vw_expiring_inventory` | Items with `quantity > 0` expiring within 3 months from today, with `days_until_expiry`. Use this for the inventory expiry UI. |
+| `vw_expiring_inventory` | Items with `quantity > 0` within their expiry threshold, with `days_until_expiry`, `expiry_threshold_days`, and `perishability_tier` computed. Uses a tiered alert system based on `food_categories.category_name`: perishables (Produce, Dairy, Meat, Seafood, Bakery) use a 7-day window; all other categories use a 90-day window. |
 | `vw_volunteer_hours_log_last_30_days` | Shift records from the last 30 days. Joins `volunteer_shifts` → `volunteers` → `users` for names, with `total_hours` formatted as `Xh Ym`. Use this for Query 7. |
 
 ### Triggers
@@ -106,7 +106,7 @@ The DDL is in `dbDDL.sql`. It sources two additional files at the end:
 `dbTRIGGERS.sql` includes the following triggers:
 
 **`trg_volunteer_shift_no_overlap_insert` / `trg_volunteer_shift_no_overlap_update`**
-Prevent a volunteer from being booked into overlapping shifts across any branch on the same date. Raises `SQLSTATE '45000'` with a descriptive message on violation. The `UPDATE` trigger excludes the row being updated via `AND shift_id != NEW.shift_id` to avoid false positives on edits.
+Prevent a volunteer from being booked into overlapping shifts across any branch on the same date. Back-to-back shifts where a previous shift's end time equals the next shift's start time are explicitly permitted, reflecting real-world volunteer scheduling practice. Raises `SQLSTATE '45000'` with a descriptive message on violation. The `UPDATE` trigger excludes the row being updated via `AND shift_id != NEW.shift_id` to avoid false positives on edits.
 
 ### Key constraints to remember
 
@@ -195,6 +195,7 @@ All 17 queries from the original project specification. Do not rewrite them unle
 - Follow standard Spring Boot project structure: `controller`, `service`, `repository`, `model` packages
 - Entity classes map 1:1 to DB tables; use `@Entity`, `@Table`, `@Id`, `@Column` annotations
 - `food_items` PK maps to a `String` field in Java, not `Long` or `Integer`
+- `food_categories` must be treated as a controlled reference table — the application must not allow users to freely add, edit, or delete categories. The perishability tier logic in `vw_expiring_inventory` depends on exact category name matches (`Produce`, `Dairy`, `Meat`, `Seafood`, `Bakery`). Any category name change will silently break the tiered expiry logic. Category management, if needed, should be a privileged operation gated behind a future admin UI with strict validation.
 - Use `@PreAuthorize("hasRole('STAFF')")` or a `SecurityConfig` filter chain to gate the reports routes
 - Insight queries belong in the `service` layer as `@Query` methods or native SQL via `EntityManager` — not inlined in controllers
 - Frontend API calls go through a single `api.js` utility that attaches the JWT header automatically

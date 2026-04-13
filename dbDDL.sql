@@ -388,16 +388,32 @@ SELECT
     fbb.branch_name,
     i.food_sku,
     f.food_name,
+    fc.category_name,
     i.quantity,
     i.unit,
     i.expiry_date,
-    DATEDIFF(i.expiry_date, CURDATE()) AS days_until_expiry
+    DATEDIFF(i.expiry_date, CURDATE()) AS days_until_expiry,
+    CASE
+      WHEN fc.category_name IN ('Produce', 'Dairy', 'Protein', 'Frozen Foods', 'Baby Food')
+        THEN 7
+      ELSE 90
+    END AS expiry_threshold_days,
+    CASE
+      WHEN fc.category_name IN ('Produce', 'Dairy', 'Protein', 'Frozen Foods', 'Baby Food')
+        THEN 'Perishable'
+      ELSE 'Dry Good'
+    END AS perishability_tier
 FROM inventories i
 JOIN food_items f ON i.food_sku = f.sku
+JOIN food_categories fc ON f.category_id = fc.category_id
 JOIN food_bank_branches fbb ON i.branch_id = fbb.branch_id
 JOIN food_banks fb ON fbb.food_bank_id = fb.food_bank_id
 WHERE i.quantity > 0
-  AND i.expiry_date <= DATE_ADD(CURDATE(), INTERVAL 3 MONTH)
-  AND i.expiry_date >= CURDATE();
+  AND i.expiry_date >= CURDATE()
+  AND DATEDIFF(i.expiry_date, CURDATE()) <= CASE
+      WHEN fc.category_name IN ('Produce', 'Dairy', 'Protein', 'Frozen Foods', 'Baby Food')
+        THEN 7
+      ELSE 90
+  END;
 
 SELECT 'Created vw_expiring_inventory...' as message;

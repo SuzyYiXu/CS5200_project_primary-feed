@@ -159,7 +159,8 @@ BEGIN
   WHERE volunteer_id      = NEW.volunteer_id
     AND shift_date        = NEW.shift_date
     AND shift_time_start  < NEW.shift_time_end
-    AND shift_time_end    > NEW.shift_time_start;
+    AND shift_time_end    > NEW.shift_time_start
+    AND NOT (shift_time_end = NEW.shift_time_start OR shift_time_start = NEW.shift_time_end);
 
   IF overlap_count > 0 THEN
     SIGNAL SQLSTATE '45000'
@@ -185,6 +186,7 @@ BEGIN
     AND shift_date        = NEW.shift_date
     AND shift_time_start  < NEW.shift_time_end
     AND shift_time_end    > NEW.shift_time_start
+    AND NOT (shift_time_end = NEW.shift_time_start OR shift_time_start = NEW.shift_time_end)
     AND shift_id         != NEW.shift_id;  -- exclude the row being updated
 
   IF overlap_count > 0 THEN

@@ -21,6 +21,7 @@ SELECT 'food_banks' AS table_name; SELECT * FROM food_banks;
 SELECT 'food_bank_branches' AS table_name; SELECT * FROM food_bank_branches;
 SELECT 'users' AS table_name; SELECT * FROM users;
 SELECT 'volunteers' AS table_name; SELECT * FROM volunteers;
+SELECT 'volunteer_shifts' AS table_name; SELECT * FROM volunteer_shifts;
 SELECT 'staff' AS table_name; SELECT * FROM staff;
 SELECT 'admin_permissions' AS table_name; SELECT * FROM admin_permissions;
 SELECT 'admin_permissions_per_user' AS table_name;
@@ -51,7 +52,6 @@ GROUP BY
 ORDER BY u.user_id;
 SELECT 'food_categories' AS table_name; SELECT * FROM food_categories;
 SELECT 'food_items' AS table_name; SELECT * FROM food_items;
-SELECT 'volunteer_shifts' AS table_name; SELECT * FROM volunteer_shifts;
 SELECT 'donors' AS table_name; SELECT * FROM donors;
 SELECT 'donations' AS table_name; SELECT * FROM donations;
 SELECT 'donation_items' AS table_name; SELECT * FROM donation_items;

@@ -153,6 +153,15 @@ INSERT INTO volunteer_shifts (volunteer_id, branch_id, shift_date, shift_time_st
   (1, 2, '2026-04-19', '09:00:00', '12:00:00', 'Cross-branch support shift'),
   (2, 4, '2026-04-10', '13:00:00', '17:00:00', 'Afternoon donation intake');
 
+-- VOLUNTEER_SHIFTS — trigger test cases
+-- Valid: volunteer 1 back-to-back on same branch same day as existing 09:00–12:00 shift
+INSERT INTO volunteer_shifts (volunteer_id, branch_id, shift_date, shift_time_start, shift_time_end, shift_notes) VALUES
+  (1, 1, '2026-04-05', '12:00:00', '15:00:00', 'Back-to-back with morning sorting shift');
+
+-- Should fail: volunteer 1 overlaps with existing 09:00–12:00 shift on 2026-04-1
+INSERT INTO volunteer_shifts (volunteer_id, branch_id, shift_date, shift_time_start, shift_time_end, shift_notes) VALUES
+  (1, 2, '2026-04-12', '11:00:00', '14:00:00', 'Overlaps with inventory count shift at branch 1');
+
 -- ─────────────────────────────────────────
 -- DONORS
 -- ─────────────────────────────────────────
@@ -190,7 +199,7 @@ UPDATE beneficiaries SET eligibility_status = 1 WHERE beneficiary_id = 6;
 -- Same SKU can appear multiple times per branch with different expiry dates (different batches)
 -- ─────────────────────────────────────────
 INSERT INTO inventories (food_sku, branch_id, quantity, unit, expiry_date) VALUES
-  ('SKU-001', 1, 0, 'cans', '2026-04-03 00:00:00'),
+  ('SKU-001', 1, 0, 'cans', DATE_ADD(CURDATE(), INTERVAL 45 DAY)),
   ('SKU-001', 1, 0, 'cans', '2026-12-31 00:00:00');
 
 -- Reduce Baby Formula quantity to simulate a manual stock correction
@@ -217,12 +226,12 @@ INSERT INTO donations (branch_id, donor_id, user_id, donation_date) VALUES
 INSERT INTO donation_items (donation_id, food_sku, quantity, unit, expiry_date) VALUES
   -- donation 1 at branch 1: increments pre-seeded SKU-001 batches
   (1, 'SKU-001', 120, 'cans', '2026-12-31 00:00:00'),
-  (1, 'SKU-001', 38, 'cans', '2026-04-03 00:00:00'),
-  (1, 'SKU-011', 60, 'cans', '2026-10-01 00:00:00'),
+  (1, 'SKU-001', 38, 'cans', DATE_ADD(CURDATE(), INTERVAL 45 DAY)),
+  (1, 'SKU-011', 60, 'cans', DATE_ADD(CURDATE(), INTERVAL 60 DAY)),
   -- donation 2 at branch 1: creates SKU-002
-  (2, 'SKU-002', 30, 'liters', '2026-04-10 00:00:00'),
+  (2, 'SKU-002', 30, 'liters', DATE_ADD(CURDATE(), INTERVAL 3 DAY)),
   -- donation 3 at branch 3: creates SKU-003 at branch 3
-  (3, 'SKU-003', 25, 'bags', '2026-05-15 00:00:00'),
+  (3, 'SKU-003', 25, 'bags', DATE_ADD(CURDATE(), INTERVAL 5 DAY)),
   -- donation 4 at branch 3: creates SKU-003 at branch 3 different expiry, SKU-004
   (4, 'SKU-003', 50, 'bags', '2026-05-01 00:00:00'),
   (4, 'SKU-004', 200, 'bags', '2027-06-30 00:00:00'),
@@ -233,9 +242,9 @@ INSERT INTO donation_items (donation_id, food_sku, quantity, unit, expiry_date) 
   -- donation 7 at branch 7: creates SKU-008
   (7, 'SKU-008', 100, 'bags', '2027-03-01 00:00:00'),
   -- donation 8 at branch 8: creates SKU-009
-  (8, 'SKU-009', 75, 'boxes', '2026-11-30 00:00:00'),
+  (8, 'SKU-009', 75, 'boxes', DATE_ADD(CURDATE(), INTERVAL 75 DAY)),
   -- donation 9 at branch 4: creates SKU-005 two batches
-  (9, 'SKU-005',  80, 'lbs', '2026-09-15 00:00:00'), 
+  (9, 'SKU-005',  80, 'lbs', DATE_ADD(CURDATE(), INTERVAL 4 DAY)), 
   (9, 'SKU-005',  30, 'lbs', '2026-06-01 00:00:00'),
   -- donation 10 at branch 9: creates SKU-010
   (10, 'SKU-010', 12, 'tins', '2026-07-15 00:00:00');
