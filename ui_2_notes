@@ -1,3 +1,7 @@
+The Overview Dashboard is the "presentation layer" for our RDBMS. This page should focus on pulling data from our most important views and queries—like expiring inventory, stock levels, and volunteer impact.
+
+For a clean, professional look, we use a Sidebar Navigation layout with Stat Cards at the top.
+
 1. Dashboard Design & Component Breakdown
 
 We organize the page into three main sections:
@@ -12,3 +16,10 @@ Main Content: Visualizing our complex queries (e.g., the "Expiring Soon" list fr
 
 This code includes the layout and some "dummy" data that reflects the structure of our MySQL tables.
 
+4. Demo
+
+The "Priority" Table: Directly represents our vw_expiring_inventory view. This shows that our database logic is actually driving the user's business decisions.
+
+The Stats Cards: These represent aggregate queries (e.g., SELECT COUNT(*) FROM volunteers).
+
+Branch Filtering: Note the "Branches Active" card; it hints at our multi-branch architecture (food_bank_branches table).
