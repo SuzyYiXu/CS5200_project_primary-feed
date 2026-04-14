@@ -1,0 +1,14 @@
+1. Dashboard Design & Component Breakdown
+
+We organize the page into three main sections:
+
+Sidebar: Navigation to the other 3 pages (Login, Operations, Community).
+
+Top Row (Metrics): Quick numbers pulled from counts (e.g., Total SKUs, Active Volunteers).
+
+Main Content: Visualizing our complex queries (e.g., the "Expiring Soon" list from our SQL views).
+
+2. The Implementation (Dashboard.jsx)
+
+This code includes the layout and some "dummy" data that reflects the structure of our MySQL tables.
+
