@@ -23,3 +23,21 @@ POST Request: Our React app will send a JSON object with these form fields to ou
 Service Layer: Our Spring Boot service will then call the MySQL stored procedure using a JdbcTemplate or Repository call.
 
 Error Handling: If Our trigger (trg_after_distribution_items_insert) throws an error because the stock is too low, the backend will return a 400 Bad Request. Our React form should catch this and show a red error message to the user.
+
+4. Mapping UI to our RDBMS
+
+This page is essentially a visual wrapper for the "People" tables in our schema:
+
+The Switcher: Filters between volunteers, staff, donors, and beneficiaries.
+
+Volunteers List: Demonstrates the join between users and volunteers. The "Status" pill reflects our users.status column (Active/Inactive).
+
+The Shift Logic: we added a "Next Shift" column. In a full implementation, this would run a SELECT MIN(shift_date) from volunteer_shifts where shift_date >= CURDATE().
+
+3. Demo
+
+When presenting, use this page to talk about Referential Integrity:
+
+Volunteers/Staff: Point out that while they look like separate lists, they both inherit core data (names, emails) from the users table via their shared user_id Primary Key.
+
+Triggers: Mention that if we were to "Add a Shift" that overlaps, the database itself (not just the UI) would throw a SQLSTATE '45000' error, which the UI would then display as a "Double Booking" alert.
