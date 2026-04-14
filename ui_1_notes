@@ -1,3 +1,5 @@
+This page serves two purposes: identifying the user and capturing the JWT that will unlock all other API calls.
+
 1. The Design (Wireframe)
 
 The page feature a single, centered card.
