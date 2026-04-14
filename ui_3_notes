@@ -1,3 +1,7 @@
+This page is the "control center" for our stored procedures: record_donation and record_distribution.
+
+We use a Tabbed Interface. One tab for incoming food (Donations) and one for outgoing food (Distributions), with a shared Live Inventory view at the bottom so we can see the database update in real-time.
+
 1. Operations Portal Layout (OperationsPortal.jsx)
 
 This code includes the forms needed to capture the parameters for our MySQL procedures.
