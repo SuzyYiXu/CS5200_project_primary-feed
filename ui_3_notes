@@ -1,0 +1,21 @@
+1. Operations Portal Layout (OperationsPortal.jsx)
+
+This code includes the forms needed to capture the parameters for our MySQL procedures.
+
+2. Database Logic
+
+FIFO Note: Under the distribution button, we added a small note about FIFO. This highlights the dbPROCS.sql logic where the record_distribution procedure uses ORDER BY expiry_date ASC to pick which batch to decrement.
+
+SKU/Batch Correlation: The Inventory table on the right should ideally be grouped by SKU but show multiple rows for different expiry dates. This demonstrates that our database tracks batches, not just total quantities.
+
+Procedure Mapping: The input fields map 1-to-1 with the parameters in our CALL record_donation(...) statements.
+
+3. Integrating with GCP & Spring Boot
+
+When we're ready to connect the frontend to the backend:
+
+POST Request: Our React app will send a JSON object with these form fields to our Spring Boot controller.
+
+Service Layer: Our Spring Boot service will then call the MySQL stored procedure using a JdbcTemplate or Repository call.
+
+Error Handling: If Our trigger (trg_after_distribution_items_insert) throws an error because the stock is too low, the backend will return a 400 Bad Request. Our React form should catch this and show a red error message to the user.
