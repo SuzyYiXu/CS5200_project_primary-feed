@@ -16,7 +16,7 @@ Main Content: Visualizing our complex queries (e.g., the "Expiring Soon" list fr
 
 This code includes the layout and some "dummy" data that reflects the structure of our MySQL tables.
 
-4. Demo
+3. Demo
 
 The "Priority" Table: Directly represents our vw_expiring_inventory view. This shows that our database logic is actually driving the user's business decisions.
 
