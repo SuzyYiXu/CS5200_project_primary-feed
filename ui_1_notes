@@ -1,6 +1,6 @@
 1. The Design (Wireframe)
 
-The page will feature a single, centered card.
+The page feature a single, centered card.
 
 Top: Project Title ("PrimaryFeed") and a subtitle ("Database Management Portal").
 
@@ -14,7 +14,7 @@ This uses standard React hooks (useState) and a mock function for the API call.
 
 3. Connection to the Database Logic
 
-Email & Password: These map directly to the email and password_hash columns in your users table.
+Email & Password: These map directly to the email and password_hash columns in the users table.
 
 Role-Based Routing: The logic if (data.role === 0) handles the specific enum defined in DDL (0=Staff, 1=Volunteer). This allows us to show different pages depending on the database user.
 
