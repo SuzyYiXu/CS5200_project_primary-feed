@@ -7,6 +7,8 @@ import Dashboard from './Dashboard';
 import OperationsPortal from './OperationsPortal';
 import CommunityManagement from './CommunityManagement';
 
+import './App.css';
+
 function App() {
   return (
     <Router>
