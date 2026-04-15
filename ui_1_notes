@@ -20,5 +20,9 @@ This uses standard React hooks (useState) and a mock function for the API call.
 
 Email & Password: These map directly to the email and password_hash columns in the users table.
 
-Role-Based Routing: The logic if (data.role === 0) handles the specific enum defined in DDL (0=Staff, 1=Volunteer). This allows us to show different pages depending on the database user.
+Role-Based Routing: The logic if (data.role === 0) handles the specific enum defined in DDL (0=Staff, 1=Volunteer). 
+
+This allows us to show different pages depending on the database user.
+
+Status Check: In our final backend logic, ensure we also check the status column (0=Inactive, 1=Active) so that deactivated users cannot log in even with the correct password.
 
