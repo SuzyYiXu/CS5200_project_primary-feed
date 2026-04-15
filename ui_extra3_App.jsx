@@ -1,7 +1,15 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from 'react-router-dom';
 
-// Import the components we designed
+// 1. Import the Sidebar
+import Sidebar from './Sidebar';
+
+// 2. Import the Page components
 import LoginPage from './LoginPage';
 import Dashboard from './Dashboard';
 import OperationsPortal from './OperationsPortal';
@@ -9,19 +17,48 @@ import CommunityManagement from './CommunityManagement';
 
 import './App.css';
 
+// A small helper component to keep the Sidebar on every page except Login
+const Layout = ({ children }) => (
+  <div className="flex h-screen bg-gray-100">
+    <Sidebar />
+    <div className="flex-1 overflow-auto">{children}</div>
+  </div>
+);
+
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Public Route */}
+        {/* Public Route: No Sidebar here */}
         <Route path="/login" element={<LoginPage />} />
-        
-        {/* Private Routes (The pages that show after login) */}
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/operations" element={<OperationsPortal />} />
-        <Route path="/community" element={<CommunityManagement />} />
 
-        {/* Default redirect: send user to Login if they go to the root URL */}
+        {/* Private Routes: Wrapped in the Layout to show the Sidebar */}
+        <Route
+          path="/dashboard"
+          element={
+            <Layout>
+              <Dashboard />
+            </Layout>
+          }
+        />
+        <Route
+          path="/operations"
+          element={
+            <Layout>
+              <OperationsPortal />
+            </Layout>
+          }
+        />
+        <Route
+          path="/community"
+          element={
+            <Layout>
+              <CommunityManagement />
+            </Layout>
+          }
+        />
+
+        {/* Default redirect */}
         <Route path="/" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>
