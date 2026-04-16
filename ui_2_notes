@@ -1,4 +1,6 @@
-The Overview Dashboard is the "presentation layer" for our RDBMS. This page should focus on pulling data from our most important views and queries—like expiring inventory, stock levels, and volunteer impact.
+The Overview Dashboard is the "presentation layer" for our RDBMS. 
+
+This page should focus on pulling data from our most important views and queries—like expiring inventory, stock levels, and volunteer impact.
 
 For a clean, professional look, we use a Sidebar Navigation layout with Stat Cards at the top.
 
